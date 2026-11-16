@@ -297,6 +297,7 @@ async function loadData() {
   state.activities = Array.isArray(data.activities) ? data.activities : [];
   if (state.sheetId) {
     document.querySelector("#sheet-input").value = state.sheetId;
+    persistSheetId(state.sheetId);
   }
   document.querySelector("#sheet-name").textContent = state.sheetId
     ? `Terhubung: ${state.sheetName || "Google Sheet"}`
