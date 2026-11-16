@@ -1,5 +1,6 @@
 const API_BASE = "/api/daily-activity";
 const GAS_BRIDGE_URL = window.DAILY_ACTIVITY_GAS_BRIDGE_URL || "";
+const SHEET_STORAGE_KEY = "ritme.dailyActivity.sheetId";
 const apiBridgeRequests = new Map();
 const apiBridgeReadyWaiters = [];
 let apiBridgeFrame = null;
@@ -26,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelector("#day-of-month-input").value = Number(
     localDate().slice(8, 10),
   );
+  restoreSheetInput();
   bindForms();
   bindListActions();
   updateRepeatFields();
@@ -39,6 +41,31 @@ function localDate(date = new Date()) {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function restoreSheetInput() {
+  try {
+    document.querySelector("#sheet-input").value =
+      window.localStorage.getItem(SHEET_STORAGE_KEY) || "";
+  } catch (error) {
+    console.error("Tidak dapat membaca ID Sheet dari penyimpanan lokal:", error);
+    showMessage(
+      "Browser tidak dapat membaca penyimpanan lokal. ID Google Sheet tidak bisa dipulihkan otomatis.",
+    );
+  }
+}
+
+function persistSheetId(sheetId) {
+  try {
+    window.localStorage.setItem(SHEET_STORAGE_KEY, String(sheetId));
+    return true;
+  } catch (error) {
+    console.error("Tidak dapat menyimpan ID Sheet secara lokal:", error);
+    showMessage(
+      "Google Sheet terhubung, tetapi browser tidak dapat menyimpan ID Sheet di perangkat ini.",
+    );
+    return false;
+  }
 }
 
 async function apiRequest(path = "", options = {}) {
@@ -268,6 +295,9 @@ async function loadData() {
   state.sheetId = data.sheetId || "";
   state.sheetName = data.sheetName || "";
   state.activities = Array.isArray(data.activities) ? data.activities : [];
+  if (state.sheetId) {
+    document.querySelector("#sheet-input").value = state.sheetId;
+  }
   document.querySelector("#sheet-name").textContent = state.sheetId
     ? `Terhubung: ${state.sheetName || "Google Sheet"}`
     : "Belum ada Sheet yang terhubung.";
@@ -299,9 +329,15 @@ function bindForms() {
       });
       state.sheetId = result.sheetId || "";
       state.sheetName = result.sheetName || "";
-      input.value = "";
+      if (!state.sheetId) {
+        throw new Error("Google Sheet berhasil diproses, tetapi ID Sheet tidak diterima.");
+      }
+      input.value = state.sheetId;
+      const savedLocally = persistSheetId(state.sheetId);
       await loadData();
-      showMessage("Google Sheet berhasil dihubungkan. Tab kegiatan dan progres sudah siap.");
+      if (savedLocally) {
+        showMessage("Google Sheet berhasil dihubungkan. Tab kegiatan dan progres sudah siap.");
+      }
     } catch (error) {
       showError(error);
     } finally {

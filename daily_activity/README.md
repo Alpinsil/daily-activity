@@ -13,6 +13,8 @@ The GitHub Pages workflow publishes this app at the repository Pages root. The a
 
 The bridge permits public read/write operations from the configured Pages origin without login. Anyone who can access the published app can manage the selected tracker spreadsheet. Use a dedicated spreadsheet with no unrelated data.
 
+The app remembers the connected Sheet ID in this browser's local storage and restores it in the connection field after refresh. This is device/browser-specific and is not a backup or cross-device sync.
+
 ## GitHub Pages
 
 The workflow in `.github/workflows/deploy-daily-activity.yml` publishes the static files. Enable GitHub Pages with **GitHub Actions** as the source, then push to `main` or run the workflow manually from the Actions tab.
