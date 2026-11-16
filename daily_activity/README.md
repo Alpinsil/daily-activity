@@ -14,6 +14,6 @@ The bridge permits public read/write operations from the configured Pages origin
 
 ## GitHub Pages
 
-The workflow in `.github/workflows/deploy-daily-activity.yml` publishes the static files. Enable GitHub Pages with **GitHub Actions** as the source, then push the repository to its `main` branch.
+The workflow in `.github/workflows/deploy-daily-activity.yml` publishes the static files. Enable GitHub Pages with **GitHub Actions** as the source, then push to `main` or run the workflow manually from the Actions tab.
 
 The Apps Script bridge is needed for hosted read/write operations. Without it, only the app shell loads; tracker data cannot synchronize.
