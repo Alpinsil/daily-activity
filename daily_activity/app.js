@@ -7,6 +7,7 @@ let apiBridgeReady = false;
 let apiBridgeConfigurationError = "";
 let apiBridgeTargetWindow = null;
 let apiBridgeTargetOrigin = "";
+let apiBridgeNonce = "";
 let apiBridgeRequestId = 0;
 const state = {
   sheetId: "",
@@ -141,6 +142,12 @@ function initializeApiBridge() {
     return;
   }
 
+  const nonceBytes = new Uint8Array(16);
+  window.crypto.getRandomValues(nonceBytes);
+  apiBridgeNonce = Array.from(nonceBytes, (byte) =>
+    byte.toString(16).padStart(2, "0"),
+  ).join("");
+
   apiBridgeFrame = document.createElement("iframe");
   apiBridgeFrame.title = "Penghubung ke Google Sheets";
   apiBridgeFrame.tabIndex = -1;
@@ -152,6 +159,7 @@ function initializeApiBridge() {
     if (!isApiBridgeFrame(event.source, event.origin)) return;
     const message = event.data;
     if (message?.type === "daily-activity-bridge-ready") {
+      if (message.nonce !== apiBridgeNonce) return;
       apiBridgeTargetWindow = event.source;
       apiBridgeTargetOrigin = event.origin;
       apiBridgeReady = true;
@@ -161,7 +169,8 @@ function initializeApiBridge() {
     if (
       event.source !== apiBridgeTargetWindow ||
       event.origin !== apiBridgeTargetOrigin ||
-      message?.type !== "daily-activity-bridge-response"
+      message?.type !== "daily-activity-bridge-response" ||
+      message.nonce !== apiBridgeNonce
     ) {
       return;
     }
@@ -175,19 +184,21 @@ function initializeApiBridge() {
   });
 
   bridgeUrl.searchParams.set("bridge", "1");
+  bridgeUrl.searchParams.set("bridgeNonce", apiBridgeNonce);
   apiBridgeFrame.src = bridgeUrl.toString();
   document.body.appendChild(apiBridgeFrame);
 }
 
 function isApiBridgeFrame(source, origin) {
-  if (!apiBridgeFrame || source !== apiBridgeFrame.contentWindow) return false;
+  if (!apiBridgeFrame || !source) return false;
   try {
     const sender = new URL(origin);
     return (
       sender.protocol === "https:" &&
       (sender.hostname === "script.google.com" ||
         sender.hostname === "script.googleusercontent.com" ||
-        sender.hostname.endsWith(".script.googleusercontent.com"))
+        sender.hostname.endsWith(".script.googleusercontent.com") ||
+        /^[a-z0-9-]+-script\.googleusercontent\.com$/.test(sender.hostname))
     );
   } catch {
     return false;
@@ -233,7 +244,12 @@ async function callApiBridge(request) {
     }, 30000);
     apiBridgeRequests.set(id, { resolve, reject, timeout });
     apiBridgeTargetWindow.postMessage(
-      { type: "daily-activity-bridge-request", id, request },
+      {
+        type: "daily-activity-bridge-request",
+        id,
+        nonce: apiBridgeNonce,
+        request,
+      },
       apiBridgeTargetOrigin,
     );
   });

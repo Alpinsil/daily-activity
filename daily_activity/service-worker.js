@@ -1,10 +1,10 @@
-const CACHE_NAME = "ritme-shell-v2";
+const CACHE_NAME = "ritme-shell-v3";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./styles.css?v=1",
   "./config.js?v=1",
-  "./app.js?v=2",
+  "./app.js?v=3",
   "./manifest.webmanifest",
   "./icon.svg",
 ];

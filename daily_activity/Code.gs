@@ -33,6 +33,10 @@ function doGet(event) {
       PropertiesService.getScriptProperties().getProperty(
         "DAILY_ACTIVITY_ALLOWED_ORIGIN",
       ) || "";
+    const bridgeNonce = String(event.parameter.bridgeNonce || "");
+    template.bridgeNonce = /^[a-f0-9]{32}$/.test(bridgeNonce)
+      ? bridgeNonce
+      : "";
     return template
       .evaluate()
       .setTitle("Daily Activity API")
@@ -77,7 +81,7 @@ function doPost(event) {
 
 function dailyActivityWebBridgeRequest(request) {
   try {
-    if (!request || typeof request !== "object") {
+    if (!request || typeof request !== "object" || Array.isArray(request)) {
       throw new Error("Permintaan website tidak valid.");
     }
     if (JSON.stringify(request).length > 32768) {
@@ -93,14 +97,15 @@ function dailyActivityWebBridgeRequest(request) {
       "delete_activity",
       "set_completion",
     ];
-    if (allowedActions.indexOf(String(request.action || "")) < 0) {
+    const action = String(request.action || "");
+    if (allowedActions.indexOf(action) < 0) {
       throw new Error("Aksi website tidak dikenal.");
     }
     return {
       status: "success",
       data: handleDailyActivityRequest_({
         source: "daily_activity",
-        action: request.action,
+        action: action,
         data: request.data || {},
       }),
     };
