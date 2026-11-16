@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#123c35">
+    <meta name="description" content="Atur rutinitas dan pengingat kegiatan harian melalui WhatsApp.">
+    <meta name="referrer" content="no-referrer">
+    <title>Ritme | Daily Activity</title>
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" href="./icon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./styles.css?v=1">
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Ritme, beranda">
+        <img src="./icon.svg" alt="" width="42" height="42">
+        <span><strong>ritme</strong><small>daily activity tracker</small></span>
+      </a>
+      <span id="sync-label" class="sync-label">Belum tersinkron</span>
+    </header>
+
+    <main class="shell">
+      <section class="intro">
+        <div>
+          <p class="eyebrow">JALANI HARI DENGAN TERATUR</p>
+          <h1>Rutinitas yang terasa ringan.</h1>
+          <p class="intro-copy">Atur kegiatan berulang atau satu kali, tandai progres, dan terima pengingat WhatsApp sebelum waktunya.</p>
+        </div>
+        <div class="date-pill" id="today-label"></div>
+      </section>
+
+      <section id="connection-card" class="panel connection-card">
+        <div>
+          <p class="eyebrow">SINKRONISASI</p>
+          <h2>Hubungkan Google Sheet</h2>
+          <p class="subtle">Sheet menyimpan kegiatan, progres, dan riwayat pengingat. Tab yang diperlukan dibuat otomatis.</p>
+        </div>
+        <form id="sheet-form" class="sheet-form">
+          <label for="sheet-input">URL atau ID Google Sheet</label>
+          <div class="input-row">
+            <input id="sheet-input" name="sheet" type="text" inputmode="url" placeholder="URL atau ID Google Sheet" required>
+            <button class="button button-dark" type="submit">Hubungkan</button>
+          </div>
+          <p id="sheet-name" class="sheet-status"></p>
+        </form>
+        <p class="public-note"><strong>Catatan akses:</strong> aplikasi ini tanpa login. Siapa pun yang mengetahui alamat web dapat melihat/mengubah aktivitas serta mengganti spreadsheet tracker.</p>
+      </section>
+
+      <div id="app-message" class="app-message" role="status" aria-live="polite"></div>
+
+      <section class="dashboard-grid">
+        <section class="panel today-panel" aria-labelledby="today-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">PROGRES HARI INI</p>
+              <h2 id="today-title">Jadwal kegiatan</h2>
+            </div>
+            <span id="progress-count" class="progress-count">0 / 0</span>
+          </div>
+          <div id="today-list" class="activity-list">
+            <div class="empty-state">Hubungkan Google Sheet untuk melihat jadwal.</div>
+          </div>
+        </section>
+
+        <section class="panel form-panel" aria-labelledby="form-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">ATUR KEGIATAN</p>
+              <h2 id="form-title">Tambah kegiatan</h2>
+            </div>
+          </div>
+          <form id="activity-form" class="activity-form">
+            <input id="activity-id" type="hidden">
+            <label for="title-input">Nama kegiatan</label>
+            <input id="title-input" name="title" maxlength="100" placeholder="Contoh: Cuci muka pagi" required>
+
+            <div class="two-columns">
+              <div>
+                <label for="category-input">Kategori <span class="optional">(opsional)</span></label>
+                <input id="category-input" name="category" maxlength="60" placeholder="Perawatan diri">
+              </div>
+              <div>
+                <label for="time-input">Waktu mulai</label>
+                <input id="time-input" name="time" type="time" required>
+              </div>
+            </div>
+
+            <label for="repeat-input">Pengulangan</label>
+            <select id="repeat-input" name="recurrence">
+              <option value="daily">Setiap hari</option>
+              <option value="weekly">Mingguan</option>
+              <option value="monthly">Bulanan</option>
+              <option value="once">Satu kali</option>
+            </select>
+
+            <fieldset id="weekdays-field" class="weekday-field" hidden>
+              <legend>Ulangi pada hari</legend>
+              <div class="weekday-options">
+                <label><input type="checkbox" name="weekday" value="1"> Sen</label>
+                <label><input type="checkbox" name="weekday" value="2"> Sel</label>
+                <label><input type="checkbox" name="weekday" value="3"> Rab</label>
+                <label><input type="checkbox" name="weekday" value="4"> Kam</label>
+                <label><input type="checkbox" name="weekday" value="5"> Jum</label>
+                <label><input type="checkbox" name="weekday" value="6"> Sab</label>
+                <label><input type="checkbox" name="weekday" value="7"> Min</label>
+              </div>
+            </fieldset>
+
+            <div class="two-columns">
+              <div>
+                <label for="start-date-input">Mulai tanggal</label>
+                <input id="start-date-input" name="startDate" type="date" required>
+              </div>
+              <div id="end-date-field">
+                <label for="end-date-input">Sampai tanggal <span class="optional">(opsional)</span></label>
+                <input id="end-date-input" name="endDate" type="date">
+              </div>
+            </div>
+
+            <div id="monthly-field" class="monthly-field" hidden>
+              <label for="day-of-month-input">Tanggal setiap bulan</label>
+              <input id="day-of-month-input" name="dayOfMonth" type="number" min="1" max="31">
+            </div>
+
+            <div class="two-columns">
+              <div>
+                <label for="reminder-input">Ingatkan sebelumnya</label>
+                <select id="reminder-input" name="reminderMinutes">
+                  <option value="10">10 menit</option>
+                  <option value="15">15 menit</option>
+                </select>
+              </div>
+              <label class="active-toggle" for="active-input">
+                <input id="active-input" name="active" type="checkbox" checked>
+                <span>Aktif</span>
+              </label>
+            </div>
+
+            <label for="notes-input">Catatan <span class="optional">(opsional)</span></label>
+            <textarea id="notes-input" name="notes" rows="2" maxlength="500" placeholder="Detail kegiatan atau perlengkapan"></textarea>
+
+            <div class="form-actions">
+              <button id="save-button" class="button button-dark button-full" type="submit">Simpan kegiatan</button>
+              <button id="cancel-edit" class="button button-light button-full" type="button" hidden>Batal mengubah</button>
+            </div>
+          </form>
+        </section>
+      </section>
+
+      <section class="panel all-panel" aria-labelledby="all-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">DAFTAR AKTIVITAS</p>
+            <h2 id="all-title">Semua kegiatan</h2>
+          </div>
+          <span id="activity-count" class="subtle"></span>
+        </div>
+        <div id="all-list" class="activity-list all-list">
+          <div class="empty-state">Belum ada kegiatan. Tambahkan kegiatan pertama di atas.</div>
+        </div>
+      </section>
+
+      <footer class="footer-note">
+        Pengingat WhatsApp dikirim oleh bot saat aktif dan terhubung. Pengingat hanya dikirim ke tujuan pada mapping <code>DAILY_BOT</code>.
+      </footer>
+    </main>
+    <script src="./config.js?v=1"></script>
+    <script src="./app.js?v=2" defer></script>
+  </body>
+</html>

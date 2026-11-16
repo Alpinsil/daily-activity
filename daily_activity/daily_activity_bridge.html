@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+  <head>
+    <base target="_top">
+    <meta charset="utf-8">
+  </head>
+  <body>
+    <script>
+      const allowedOrigin = <?!= JSON.stringify(allowedOrigin) ?>;
+
+      function isAllowedParent(source) {
+        let ancestor = window.parent;
+        while (ancestor && ancestor !== window) {
+          if (ancestor === source) return true;
+          if (ancestor === ancestor.parent) break;
+          ancestor = ancestor.parent;
+        }
+        return false;
+      }
+
+      function notifyParents(message) {
+        let ancestor = window.parent;
+        while (ancestor && ancestor !== window) {
+          ancestor.postMessage(message, "*");
+          if (ancestor === ancestor.parent) break;
+          ancestor = ancestor.parent;
+        }
+      }
+
+      window.addEventListener("message", (event) => {
+        if (
+          !allowedOrigin ||
+          event.origin !== allowedOrigin ||
+          !isAllowedParent(event.source)
+        ) {
+          return;
+        }
+
+        const message = event.data;
+        if (
+          !message ||
+          message.type !== "daily-activity-bridge-request" ||
+          typeof message.id !== "string" ||
+          !message.request
+        ) {
+          return;
+        }
+
+        google.script.run
+          .withSuccessHandler((result) => {
+            event.source.postMessage(
+              { type: "daily-activity-bridge-response", id: message.id, result },
+              event.origin,
+            );
+          })
+          .withFailureHandler((error) => {
+            event.source.postMessage(
+              {
+                type: "daily-activity-bridge-response",
+                id: message.id,
+                error: error.message || "Permintaan ke Google Sheets gagal.",
+              },
+              event.origin,
+            );
+          })
+          .dailyActivityWebBridgeRequest(message.request);
+      });
+
+      if (allowedOrigin) {
+        notifyParents({ type: "daily-activity-bridge-ready" });
+      }
+    </script>
+  </body>
+</html>

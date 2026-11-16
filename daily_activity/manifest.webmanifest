@@ -1,0 +1,19 @@
+{
+  "name": "Ritme Daily Activity Tracker",
+  "short_name": "Ritme",
+  "description": "Atur rutinitas, progres, dan pengingat kegiatan harian.",
+  "lang": "id",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f6f2",
+  "theme_color": "#123c35",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
